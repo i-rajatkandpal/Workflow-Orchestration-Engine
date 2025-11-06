@@ -2,7 +2,10 @@ package com.rajat.workflow.graph;
 
 import com.rajat.workflow.domain.PrintTask;
 import com.rajat.workflow.domain.Task;
+import com.rajat.workflow.exception.CyclicDependencyException;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -87,6 +90,70 @@ public class DAGTest {
         dag.addTask(new PrintTask("A", "Task A", "A"));
         assertThrows(IllegalArgumentException.class, () -> {
             dag.addDependencies("A", "NonExistent");
+        });
+    }
+
+
+
+    //topological sort tests
+    @Test
+    void testExecutionOrderLinear() {
+        // A -> B -> C
+        // Expected order: C, B, A
+        DAG dag = new DAG();
+        dag.addTask(new PrintTask("A", "Task A", "A"));
+        dag.addTask(new PrintTask("B", "Task B", "B"));
+        dag.addTask(new PrintTask("C", "Task C", "C"));
+
+        dag.addDependencies("A", "B");
+        dag.addDependencies("B", "C");
+
+        List<String> order = dag.getExecutionOrder();
+
+        assertEquals(3, order.size());
+        // C must come before B, B must come before A
+        assertTrue(order.indexOf("C") < order.indexOf("B"));
+        assertTrue(order.indexOf("B") < order.indexOf("A"));
+    }
+
+    @Test
+    void testExecutionOrderDiamond() {
+        // A -> B, C
+        // B -> D
+        // C -> D
+        DAG dag = new DAG();
+        dag.addTask(new PrintTask("A", "Task A", "A"));
+        dag.addTask(new PrintTask("B", "Task B", "B"));
+        dag.addTask(new PrintTask("C", "Task C", "C"));
+        dag.addTask(new PrintTask("D", "Task D", "D"));
+
+        dag.addDependencies("A", "B");
+        dag.addDependencies("A", "C");
+        dag.addDependencies("B", "D");
+        dag.addDependencies("C", "D");
+
+        List<String> order = dag.getExecutionOrder();
+
+        assertEquals(4, order.size());
+        // D must come before B and C
+        assertTrue(order.indexOf("D") < order.indexOf("B"));
+        assertTrue(order.indexOf("D") < order.indexOf("C"));
+        // B and C must come before A
+        assertTrue(order.indexOf("B") < order.indexOf("A"));
+        assertTrue(order.indexOf("C") < order.indexOf("A"));
+    }
+
+    @Test
+    void testExecutionOrderThrowsOnCycle() {
+        DAG dag = new DAG();
+        dag.addTask(new PrintTask("A", "Task A", "A"));
+        dag.addTask(new PrintTask("B", "Task B", "B"));
+
+        dag.addDependencies("A", "B");
+        dag.addDependencies("B", "A");
+
+        assertThrows(CyclicDependencyException.class, () -> {
+            dag.getExecutionOrder();
         });
     }
 }

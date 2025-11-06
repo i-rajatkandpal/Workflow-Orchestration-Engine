@@ -80,25 +80,14 @@ public class DAG {
         }
 
         Map<String, Integer> inDegree = new HashMap<>();
-        // initially putting all the as 0.
         for(String taskId : tasks.keySet()){
-            inDegree.put(taskId,0);
+            inDegree.put(taskId, dependencies.get(taskId).size());
         }
 
-
-        // map with all dependencies is traversed then each one dependency are traverse and values of those
-        // dependencies are increase by 1 because it tells that someone is dependent on it. so increase by one
-        for(String taskId : tasks.keySet()){
-            for(String dependency : dependencies.get(taskId)){
-                inDegree.put(dependency,inDegree.get(dependency) + 1);
-            }
-        }
-
-        //making a queue and add all those tasks who have in-degree = 0
 
         Queue<String> queue = new LinkedList<>();
         for(String taskId : inDegree.keySet()){
-            if(inDegree.get(taskId) == 0 ){
+            if(inDegree.get(taskId) == 0){
                 queue.add(taskId);
             }
         }
@@ -108,19 +97,19 @@ public class DAG {
             String taskId = queue.poll();
             executionOrder.add(taskId);
 
+
             for(String dependent : tasks.keySet()){
-                if(dependencies.get(dependent).contains(dependent)){
-                    inDegree.put(dependent,inDegree.get(dependent) - 1);
+                if(dependencies.get(dependent).contains(taskId)){
+                    inDegree.put(dependent, inDegree.get(dependent) - 1);
+
                     if(inDegree.get(dependent) == 0){
                         queue.add(dependent);
                     }
                 }
             }
         }
+
         return executionOrder;
-
-
-
-        // Q.1 ask claude will getAllTasksId and tasks.keySet() do the same thing.
     }
+        // Q.1 ask claude will getAllTasksId and tasks.keySet() do the same thing.
 }
