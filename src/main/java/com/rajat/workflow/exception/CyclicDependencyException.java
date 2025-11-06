@@ -1,4 +1,4 @@
-package com.rajat.workflow.expection;
+package com.rajat.workflow.exception;
 
 public class CyclicDependencyException extends RuntimeException{
     public CyclicDependencyException(String message){
