@@ -10,6 +10,18 @@ import java.util.*;
 public class WorkflowEngine {
 
     public WorkflowResult execute(DAG workflow){
+        if (workflow == null) {
+            throw new IllegalArgumentException("Workflow cannot be null");
+        }
+
+        if (workflow.getAllTasksId().isEmpty()) {
+            return new WorkflowResult(
+                    WorkflowStatus.SUCCESS,
+                    new HashMap<>(),
+                    0
+            );
+        }
+
         long startTime = System.currentTimeMillis();
 
         List<String> executeOrder = workflow.getExecutionOrder();
@@ -81,6 +93,10 @@ public class WorkflowEngine {
         return new TaskResult(taskId, TaskStatus.SKIPPED,null, "Skipped due to failed dependency" , 0);
     }
     private WorkflowStatus calculateOverallStatus(Map<String, TaskResult> results){
+        if (results.isEmpty()) {
+            return WorkflowStatus.SUCCESS;  // Empty workflow
+        }
+
         int success = 0, failed = 0 ,skipped = 0;
         for (TaskResult result : results.values()) {
             TaskStatus status = result.getStatus();
@@ -89,10 +105,12 @@ public class WorkflowEngine {
             else if (status == TaskStatus.SKIPPED) skipped++;
         }
 
-        if(failed == 0 && skipped == 0){
+        if (failed == 0 && skipped == 0) {
             return WorkflowStatus.SUCCESS;
-        } else if (success > 0) {
+        } else if (success == 0) {
+            return WorkflowStatus.FAILED;
+        } else {
             return WorkflowStatus.PARTIAL_SUCCESS;
-        }else return WorkflowStatus.FAILED;
+        }
     }
 }

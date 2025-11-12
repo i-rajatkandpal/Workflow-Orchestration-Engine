@@ -156,4 +156,40 @@ public class DAGTest {
             dag.getExecutionOrder();
         });
     }
+
+    @Test
+    void testNullTaskThrowsException() {
+        DAG dag = new DAG();
+        assertThrows(IllegalArgumentException.class, () -> {
+            dag.addTask(null);
+        });
+    }
+
+    @Test
+    void testDuplicateTaskIdThrowsException() {
+        DAG dag = new DAG();
+        dag.addTask(new PrintTask("A", "Task A", "A"));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            dag.addTask(new PrintTask("A", "Task A Again", "A"));
+        });
+    }
+
+    @Test
+    void testSelfDependencyThrowsException() {
+        DAG dag = new DAG();
+        dag.addTask(new PrintTask("A", "Task A", "A"));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            dag.addDependencies("A", "A");
+        });
+    }
+
+    @Test
+    void testEmptyTaskIdThrowsException() {
+        DAG dag = new DAG();
+        assertThrows(IllegalArgumentException.class, () -> {
+            dag.addTask(new PrintTask("", "Task", "message"));
+        });
+    }
 }

@@ -15,16 +15,33 @@ public class DAG {
     }
 
     public void addTask(Task task){
+        if (task == null) {
+            throw new IllegalArgumentException("Task cannot be null");
+        }
+        if (task.getId() == null || task.getId().trim().isEmpty()) {
+            throw new IllegalArgumentException("Task ID cannot be null or empty");
+        }
+        if (tasks.containsKey(task.getId())) {
+            throw new IllegalArgumentException("Task with ID '" + task.getId() + "' already exists");
+        }
+
         tasks.put(task.getId(), task);
         dependencies.putIfAbsent(task.getId(), new ArrayList<>());
     }
 
+
     public void addDependencies(String taskId, String dependsOnTaskId){
+        if (taskId == null || dependsOnTaskId == null) {
+            throw new IllegalArgumentException("Task IDs cannot be null");
+        }
+        if (taskId.equals(dependsOnTaskId)) {
+            throw new IllegalArgumentException("Task cannot depend on itself: " + taskId);
+        }
         if(!tasks.containsKey(taskId)){
             throw new IllegalArgumentException("Task not found: " + taskId);
         }
         if(!tasks.containsKey(dependsOnTaskId)){
-            throw new IllegalArgumentException("Dependency task not found " + dependsOnTaskId);
+            throw new IllegalArgumentException("Dependency task not found: " + dependsOnTaskId);
         }
 
         dependencies.get(taskId).add(dependsOnTaskId);

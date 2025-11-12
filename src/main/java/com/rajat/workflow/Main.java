@@ -14,6 +14,10 @@ public class Main {
         runSuccessfulWorkflow();
         System.out.println("--------------------------------------------------");
         runFailingWorkflow();
+        System.out.println("--------------------------------------------------");
+        runMathWorkflow();
+        System.out.println("--------------------------------------------------");
+        runConditionalWorkflow();
     }
     public static void runSuccessfulWorkflow(){
         System.out.println("Demo Successful workflow");
@@ -43,6 +47,38 @@ public class Main {
 
         workflow.addDependencies("taskC","taskB");
         workflow.addDependencies("taskD","taskC");
+
+        WorkflowEngine engine = new WorkflowEngine();
+        WorkflowResult result = engine.execute(workflow);
+
+        printWorkflowSummary(result);
+    }
+    private static void runMathWorkflow() {
+        System.out.println("Demo: Math Operations Workflow");
+        DAG workflow = new DAG();
+
+        workflow.addTask(new MathTask("add", "Add", 10, 5, MathTask.Operation.ADD));
+        workflow.addTask(new MathTask("multiply", "Multiply", 3, 4, MathTask.Operation.MULTIPLY));
+        workflow.addTask(new MathTask("divide", "Divide", 20, 4, MathTask.Operation.DIVIDE));
+
+        workflow.addDependencies("multiply", "add");
+        workflow.addDependencies("divide", "multiply");
+
+        WorkflowEngine engine = new WorkflowEngine();
+        WorkflowResult result = engine.execute(workflow);
+
+        printWorkflowSummary(result);
+    }
+
+    private static void runConditionalWorkflow() {
+        System.out.println("Demo: Conditional Execution");
+        DAG workflow = new DAG();
+
+        workflow.addTask(new ConditionalTask("check1", "Check Time",
+                () -> System.currentTimeMillis() % 2 == 0, "Even timestamp"));
+        workflow.addTask(new PrintTask("task1", "Task 1", "Runs if check passes"));
+
+        workflow.addDependencies("task1", "check1");
 
         WorkflowEngine engine = new WorkflowEngine();
         WorkflowResult result = engine.execute(workflow);
